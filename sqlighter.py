@@ -21,21 +21,43 @@ class SQLighter:
             else:
                 return 'da'
 
-    def add_subscriber(self, user_id, status = False):
+    def add_subscriber(self, message, status = False):
         """Добавляем нового подписчика"""
         with self.connection:
-            return self.cursor.execute("INSERT INTO `subscriptions` (`user_id`, `status`) VALUES(?,?)", (user_id, status))
+            user_id = message.from_user.id
+            user_first_name = message.from_user.first_name
+            user_last_name = message.from_user.last_name
+            username = message.from_user.username
+            self.cursor.execute("INSERT INTO `subscriptions` (`user_id`, `status`, `user_first_name`, `user_last_name`, `username`) VALUES(?,?,?,?,?)", (user_id, status, user_first_name, user_last_name, username))
 
-    def update_subscription(self, user_id, status, city = None):
+
+
+
+    def update_subscription(self, message, status, city = None, time = None):
         """Обновляем статус подписки пользователя"""
         with self.connection:
+            user_id = message.from_user.id
             if status == True:
                 self.cursor.execute("UPDATE `subscriptions` SET `status` = 1 WHERE `user_id` = ?", (user_id, ))
                 self.cursor.execute("UPDATE `subscriptions` SET `city` = ? WHERE `user_id` = ?", (city, user_id))
             elif status == False:
                 self.cursor.execute("UPDATE `subscriptions` SET `status` = 0 WHERE `user_id` = ?", (user_id, ))
                 self.cursor.execute("UPDATE `subscriptions` SET `city` = ? WHERE `user_id` = ?", (city, user_id))
-            
+                self.cursor.execute("UPDATE `subscriptions` SET `time` = ? WHERE `user_id` = ?", (time, user_id))
+
+            first_name = str(self.cursor.execute("SELECT `user_first_name` FROM `subscriptions` WHERE `user_id` = ?", (user_id, )).fetchall()[0][0])
+
+            if (first_name == 'None'):
+                user_first_name = message.from_user.first_name
+                user_last_name = message.from_user.last_name
+                username = message.from_user.username
+                self.cursor.execute("UPDATE `subscriptions` SET `user_first_name` = ? WHERE `user_id` = ?", (user_first_name, user_id))
+                self.cursor.execute("UPDATE `subscriptions` SET `user_last_name` = ? WHERE `user_id` = ?", (user_last_name, user_id))
+                self.cursor.execute("UPDATE `subscriptions` SET `username` = ? WHERE `user_id` = ?", (username, user_id))
+
+
+
+
 
 
     def subscription_status(self, user_id):
@@ -61,6 +83,16 @@ class SQLighter:
             result = self.cursor.execute("SELECT * FROM `subscriptions`").fetchall()
             return(result)
 
+        """получаем время из подписки"""
+    def get_time(self,user_id):
+        with self.connection:
+            result = self.cursor.execute("SELECT `time` FROM 'subscriptions' WHERE `user_id` = ?", (user_id, )).fetchall()
+            return(result)
+
+        """добавляем время"""
+    def add_time(self, user_id, time):
+        with self.connection:
+            self.cursor.execute("UPDATE `subscriptions` SET `time` = ? WHERE `user_id` = ?", (time, user_id))
 
 
 
