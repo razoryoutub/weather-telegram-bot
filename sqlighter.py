@@ -16,10 +16,10 @@ class SQLighter:
         """Проверяем, есть ли уже юзер в базе"""
         with self.connection:
             result = self.cursor.execute('SELECT `id` FROM `subscriptions` WHERE `user_id` = ?', (user_id, )).fetchall()
-            if (result != None):
-                return True
+            if (result == []):
+                return 'net'
             else:
-                return False
+                return 'da'
 
     def add_subscriber(self, user_id, status = False):
         """Добавляем нового подписчика"""
@@ -54,6 +54,12 @@ class SQLighter:
         with self.connection:
             result = self.cursor.execute("SELECT `city` FROM `subscriptions` WHERE `user_id` = ?", (user_id, )).fetchall()
             return result
+
+        """список всех пользователей"""
+    def all_users(self):
+        with self.connection:
+            result = self.cursor.execute("SELECT * FROM `subscriptions`").fetchall()
+            return(result)
 
 
 
