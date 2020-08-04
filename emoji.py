@@ -1,7 +1,5 @@
 import random
 
-
-
 def get_emoji(status):
 	status = status.lower()
 	try:
